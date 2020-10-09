@@ -5,6 +5,6 @@ module.exports = `
     capacity: Int!
     yearOfCreation: Moment!
     pickupGames: [PickupGame!]!
-    status: BasketBallFieldStatus!
+    status: BasketballFieldStatus!
   }
 `;
