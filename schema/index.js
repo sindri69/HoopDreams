@@ -1,11 +1,15 @@
-const character = require('./character');
-const level = require('./level');
-const bossEnemy = require('./bossEnemy');
-const commonEnemy = require('./commonEnemy');
+const queries = require('./queries');
+const mutations = require('./mutations');
+const inputs = require('./inputs');
+const interfaces = require('./interfaces');
+const types = require('./types');
+const enums = require('./enums');
 
 module.exports = `
-  ${character}
-  ${level}
-  ${bossEnemy}
-  ${commonEnemy}
+  ${queries}
+  ${mutations}
+  ${inputs}
+  ${interfaces}
+  ${types}
+  ${enums}
 `;
