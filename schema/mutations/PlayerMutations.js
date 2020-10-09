@@ -1,5 +1,5 @@
 module.exports = `
   createPlayer(input: PlayerInput!): Player!
-  updatePlayer(id: String! playedGames: [PickupGame!]!): Player!
+  updatePlayer(id: String! playedGames: [PickupGameInput]!): Player!
   deletePlayer(id: String!): Boolean!
 `;

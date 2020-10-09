@@ -14,7 +14,6 @@
     "nodemon": "^1.19.4"
   },
   "dependencies": {
-<<<<<<< HEAD
     "apollo-server": "^2.18.2",
     "graphql": "^15.3.0"
   },
@@ -26,10 +25,4 @@
     "url": "https://github.com/sindri69/HoopDreams/issues"
   },
   "homepage": "https://github.com/sindri69/HoopDreams#readme"
-=======
-    "apollo-server": "^2.18.1",
-    "graphql": "^15.3.0",
-    "moment": "^2.29.1"
-  }
->>>>>>> a5c45518349ef0b5657e10a9c330efb1261a097b
 }

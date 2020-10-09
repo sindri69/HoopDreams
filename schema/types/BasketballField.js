@@ -3,8 +3,9 @@ module.exports = `
     id: ID!
     name: String!
     capacity: Int!
-    yearOfCreation: Moment!
+   
     pickupGames: [PickupGame!]!
     status: BasketballFieldStatus!
   }
 `;
+//yearOfCreation: Moment!
