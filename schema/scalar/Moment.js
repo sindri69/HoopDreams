@@ -1,13 +1,9 @@
-import moment from 'moment';
+moment = require('moment')
 
 module.exports = `
+  scalar moment
   type Moment {
-    id: ID!
-    name: String!
-    capacity: Int!
-    yearOfCreation: Moment!
-    pickupGames: [PickupGame!]!
-    status: BasketBallFieldStatus!
+    created: Date
   }
 `;
 

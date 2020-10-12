@@ -1,5 +1,4 @@
 const { extendResolversFromInterfaces } = require('apollo-server');
-const Player = require('../data/db').Player 
 
 // (5%) allBasketballFields - Should return a collection of all basketball fields. Contains
 // a field argument called status which is of type BasketballFieldStatus (enum) and
@@ -24,9 +23,9 @@ const Player = require('../data/db').Player
 
 module.exports = {
     queries: {
-        allPlayers: () => Player, //Ekki rétt. Geri þetta betur þegar við vitum hvernig db lítur út
-        player: (parent, args) => {
-            return Player.find(p => p.id === args.id)
+        allPlayers: (context) => context.db.Player.find({}), //Ekki rétt. Geri þetta betur þegar við vitum hvernig db lítur út
+        player: (parent, args, context) => {
+            return context.db.player.findOne({_id:args.id})
         }
     },
 
