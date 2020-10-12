@@ -1,3 +1,5 @@
+const Moment = require('../scalar');
+
 module.exports = `
   type BasketballField {
     id: ID!
