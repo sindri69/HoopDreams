@@ -4,8 +4,14 @@ const resolvers = {}; //setup later (resolvers)
 const myDatabase = require('./data/db')
 
 const server = new ApolloServer({
+
     typeDefs,
-    resolvers
+    resolvers,
+    context: {
+        db: myDB,
+        services: basketballfieldService
+    }
+    
 });
 
 server.listen()
