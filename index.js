@@ -1,7 +1,8 @@
 const { ApolloServer } = require('apollo-server');
 const typeDefs = require('./schema'); //setup later (schema) 
 const resolvers = {}; //setup later (resolvers)
-const myDatabase = require('./data/db')
+const myDB = require('./data/db')
+const basketballfieldService = require('./services/basketballFieldService')
 
 const server = new ApolloServer({
 
