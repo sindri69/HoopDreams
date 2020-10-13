@@ -12,8 +12,6 @@ module.exports = {
   Mutation: {
     ...PickupGameResolver.mutations
   },
-  Moment: {
-    ...CustomScalarResolver.Moment
-  }
+  ...CustomScalarResolver
   // ...enemyResolver.types
 };
