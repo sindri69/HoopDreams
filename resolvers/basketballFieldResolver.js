@@ -24,8 +24,8 @@ const pickupgame = require('../data/db').pickupgame;
 module.exports = {
     queries: {
         allPickupGames: () => pickupgame // ekki rétt en veit ekki?
-    },
-    mutation: {...},
+    }
+    //mutation: {...},
 
 
 }

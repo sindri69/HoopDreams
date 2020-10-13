@@ -1,4 +1,4 @@
-const { extendResolversFromInterfaces } = require('apollo-server');
+const { player } = require('../data/db').player;
 
 // • (5%) createPlayer - Create a player and returns the newly created player matching
 // the Player type

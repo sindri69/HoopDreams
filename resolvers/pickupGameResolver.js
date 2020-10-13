@@ -1,5 +1,3 @@
-const pickupgame = require('../data/db').pickupgame;
-
 // (5%) allBasketballFields - Should return a collection of all basketball fields. Contains
 // a field argument called status which is of type BasketballFieldStatus (enum) and
 // should be used to filter the data based on the status of the basketball field
@@ -21,10 +19,56 @@ const pickupgame = require('../data/db').pickupgame;
 // • (5%) removePlayerFromPickupGame - Removes a player from a specific pickup
 // game returns either true or an error if something happened
 
+const { BasketballFieldClosedError, NotFoundError } = require("../errors");
+
 module.exports = {
     queries: {
         allPickupGames: () => pickupgame // ekki rétt en veit ekki?
     },
-    mutation: {...},
+    mutations: {
+        createPickupGame: async (parent, args, context) => {
+            const { start, end, basketballFieldId, host } = args.input;
+            const { myDB, basketballService } = context;
+            const field = await basketballService.getBasketballfieldById(basketballFieldId);
+
+            if (field == undefined) { throw new Error('Basketballfield does not exist'); }
+
+            //check if field is closed
+            if (field.status === 'CLOSED') {
+                throw new BasketballFieldClosedError();
+            }
+
+            return myDB.PickupGame.create({
+                start, end, host,
+                location: basketballFieldId,
+            });
+        },
+
+        removePickupGame: async (parent, args, context) => {
+            const { id } = args;
+            const { myDB } = context;
+            const result = await myDB.PickupGame.deleteOne({ _id: id });
+            if(!result.ok) {throw new Error('Could not delete pickup game');}
+            return true;
+        },
+
+        addPlayerToPickupGame: async (parent, args, context) => {
+            const {myDB, basketballService} = context;
+            const { player, pickupgame} = args.input;
+            const pickupgame = await myDB.PickupGame.findById(pickupgame);
+            if(pickupgame == undefined) {throw new NotFoundError();}
+            
+            //check if playerid exists
+            const player = await myDB.Player.findbyId(player);
+            if(player == undefined) {throw new NotFoundError('skrifa message fyrir yðar hátign');}
+            
+            //check if player is already part of the game
+            
+
+        },
+        
+
+
+    },
 
 }
