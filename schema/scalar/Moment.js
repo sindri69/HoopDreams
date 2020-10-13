@@ -1,10 +1,5 @@
-moment = require('moment')
-
 module.exports = `
-  scalar moment
-  type Moment {
-    created: Date
-  }
+  scalar Moment
 `;
 
 //moment().format('llll');

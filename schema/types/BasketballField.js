@@ -1,5 +1,4 @@
 module.exports = `
-  scalar Moment
   type BasketballField {
     id: ID!
     name: String!
