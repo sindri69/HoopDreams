@@ -1,6 +1,4 @@
 const pickupgame = require('../data/db').pickupgame;
-const { GraphQLScalarType} = require('graphql');
-const moment = require('moment')
 
 // (5%) allBasketballFields - Should return a collection of all basketball fields. Contains
 // a field argument called status which is of type BasketballFieldStatus (enum) and
@@ -28,14 +26,6 @@ module.exports = {
         allPickupGames: () => pickupgame // ekki rétt en veit ekki?
     },
     mutation: {...},
-    Moment: new GraphQLScalarType({
-        name: 'Moment',
-        description: 'A custom scalar type',
-        parseValue: (value) => {return value;},
-        parseLiteral: (value) => {return value},
-        serialize: (value) => moment(value).format('llll')
-    })
-
 
 
 }
