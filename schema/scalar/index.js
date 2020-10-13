@@ -1,5 +1,5 @@
-const moment = require('./Moment')
+const Moment = require('./Moment')
 
 module.exports = `
-        ${moment}
+        ${Moment}
 `

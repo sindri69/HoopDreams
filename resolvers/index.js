@@ -1,12 +1,19 @@
-const customScalarResolver = require('./customScalarResolver');
-const basketballFieldResolver = require('./basketballFieldResolver');
-const pickupGameResolver = require('./pickupGameResolver');
-const playerResolver = require('./playerResolver');
+const PickupGameResolver = require('./pickupGameResolver');
+const PlayerResolver = require('./playerResolver');
+const CustomScalarResolver = require('./customScalarResolver');
+const BasketballFieldResolver = require('./basketballFieldResolver');
 
-
-module.exports = `
-  ${customScalarResolver}
-  ${basketballFieldResolver}
-  ${pickupGameResolver}
-  ${playerResolver}
-`;
+module.exports = {
+  Query: {
+    ...PickupGameResolver.queries,
+    // ...enemyResolver.queries,
+    // ...levelResolver.queries
+  },
+  Mutation: {
+    ...PickupGameResolver.mutations
+  },
+  Moment: {
+    ...CustomScalarResolver.Moment
+  }
+  // ...enemyResolver.types
+};

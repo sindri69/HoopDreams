@@ -1,5 +1,3 @@
-const { player } = require('../data/db').player;
-
 // • (5%) createPlayer - Create a player and returns the newly created player matching
 // the Player type
 // • (5%) updatePlayer - Updates a player by id and returns the updated player matching
