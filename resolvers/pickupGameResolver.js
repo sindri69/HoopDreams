@@ -28,14 +28,5 @@ module.exports = {
         allPickupGames: () => pickupgame // ekki rétt en veit ekki?
     },
     mutation: {...},
-    Moment: new GraphQLScalarType({
-        name: 'Moment',
-        description: 'A custom scalar type',
-        parseValue: (value) => {return value;},
-        parseLiteral: (value) => {return value},
-        serialize: (value) => moment(value).format('llll')
-    })
-
-
 
 }
