@@ -4,9 +4,9 @@ const moment = require('moment');
 module.exports = {
     Moment: new GraphQLScalarType({
         name: 'Moment',
-        description: 'a custom svalar for representing dates',
+        description: 'a custom scalar for representing dates',
         parseValue: value => new Date(value).toString(),
-        serialize: value => moment(new Date(value)).format('llll'),
-        parseLiteral: ast => ast.value
+        parseLiteral: val => val.value,
+        serialize: value => moment(new Date(value)).format('llll')
     })
 };
