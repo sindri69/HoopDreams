@@ -1,11 +1,9 @@
 module.exports = {
     queries: {
         allBasketballFields: (parent, args, context) => {
-            console.log(parent)
-            const { basketballService } = context;
+            const { basketballFieldService } = context.services;
             const { status } = args;
-            console.log(basketballService)
-            return basketballService.getAllBasketballfields();
+            return basketballFieldService.getAllBasketballfields();
     },
     basketballField: (parent, args, context) => {
         const { basketballService } = context;

@@ -15,6 +15,6 @@ module.exports = {
     ...PickupGameResolver.mutations,
     ...PlayerResolver.mutations
   },
-  //...CustomScalarResolver
+  ...CustomScalarResolver
   // ...enemyResolver.types
 };

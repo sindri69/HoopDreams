@@ -1,17 +1,21 @@
 const { ApolloServer } = require('apollo-server');
-const typeDefs = require('./schema'); 
+const typeDefs = require('./schema');
 const resolvers = require('./resolvers');
 const myDB = require('./data/db')
-const basketballfieldService = require('./services/basketballFieldService')
+const basketballFieldService = require('./services/basketballFieldService')
 
 const server = new ApolloServer({
 
     typeDefs,
     resolvers,
-    context: {
+    context: () => {
+      return {
         db: myDB,
-        services: basketballfieldService
-    }    
+        services: {
+          basketballFieldService
+        }
+      }
+    }
 });
 
 server.listen()

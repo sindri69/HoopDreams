@@ -3,6 +3,7 @@ const mutations = require('./mutations');
 const inputs = require('./input');
 const types = require('./types');
 const enums = require('./enums');
+const scalars = require('./scalar');
 
 module.exports = `
   ${queries}
@@ -10,4 +11,5 @@ module.exports = `
   ${inputs}
   ${types}
   ${enums}
+  ${scalars}
 `;
