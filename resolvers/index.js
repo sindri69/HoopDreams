@@ -6,12 +6,15 @@ const BasketballFieldResolver = require('./basketballFieldResolver');
 module.exports = {
   Query: {
     ...PickupGameResolver.queries,
+    ...BasketballFieldResolver.queries,
+    ...PlayerResolver.queries,
     // ...enemyResolver.queries,
     // ...levelResolver.queries
   },
   Mutation: {
-    ...PickupGameResolver.mutations
+    ...PickupGameResolver.mutations,
+    ...PlayerResolver.mutations
   },
-  ...CustomScalarResolver
+  //...CustomScalarResolver
   // ...enemyResolver.types
 };

@@ -11,8 +11,7 @@ const server = new ApolloServer({
     context: {
         db: myDB,
         services: basketballfieldService
-    }
-    
+    }    
 });
 
 server.listen()

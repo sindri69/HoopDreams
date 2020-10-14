@@ -5,5 +5,6 @@ module.exports = new Schema({
     end: {type: Date, required: true},
     location: {type: String, required: true},
     registeredPlayers: [Schema.Types.ObjectId],
-    host: {type: Schema.Types.ObjectId, required: true}
+    host: {type: Schema.Types.ObjectId, required: true},
+    available: {type: Boolean, default: true}
 });
