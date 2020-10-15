@@ -8,13 +8,10 @@ module.exports = {
     ...PickupGameResolver.queries,
     ...BasketballFieldResolver.queries,
     ...PlayerResolver.queries,
-    // ...enemyResolver.queries,
-    // ...levelResolver.queries
   },
   Mutation: {
     ...PickupGameResolver.mutations,
     ...PlayerResolver.mutations
   },
   ...CustomScalarResolver
-  // ...enemyResolver.types
 };

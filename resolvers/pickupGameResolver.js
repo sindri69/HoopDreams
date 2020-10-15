@@ -2,8 +2,8 @@ const { BasketballFieldClosedError, NotFoundError, PickupGameExceedMaximumError,
 
 module.exports = {
     queries: {
-        allPickupGames: async(context) => {
-            const {myDB} = context
+        allPickupGames: async(parent, args, context) => {
+            const myDB = context.db
             const pickupgames = await myDB.PickupGame.find({available: true})
             return pickupgames
     }},
