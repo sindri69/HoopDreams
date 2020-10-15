@@ -25,11 +25,14 @@ module.exports = {
                 throw new BasketballFieldClosedError();
             }
 
-            return myDB.PickupGame.create({
+            value = myDB.PickupGame.create({
                 start, end, host,
                 location: basketballFieldId,
                 registeredPlayers: [host]
             });
+
+            basketballfield = myDB.BasketballField.findById(basketballFieldId);
+            basketballfield["pickupGames"].append(value["id"])
         },
 
         removePickupGame: async (parent, args, context) => {
@@ -39,6 +42,13 @@ module.exports = {
             if(result == null) {throw new Error('Could not delete pickup game');}
             result.available = false
             result.save()
+            basketballfield = myDB.BasketballField.findById(basketballFieldId);
+            for (i = 0; i <basketballfield["pickupGames"].length; i++){
+                if (basketballfield["pickupGames"][i] == id){
+                    basketballfield["pickupGames"].splice(i)
+                    break
+                }
+            }
             return true;
         },
 

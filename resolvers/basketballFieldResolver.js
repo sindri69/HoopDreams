@@ -3,12 +3,12 @@ module.exports = {
         allBasketballFields: (parent, args, context) => {
             const { basketballFieldService } = context.services;
             const { status } = args;
-            return basketballFieldService.getAllBasketballfields();
+            return basketballFieldService.getAllBasketballfields(status, context);
     },
-    basketballField: (parent, args, context) => {
-        const { basketballService } = context;
-        const { id } = args;
-        return basketballService.getBasketballfieldById(id);
+        basketballField: (parent, args, context) => {
+            const { basketballFieldService } = context.services;
+            const { id } = args;
+            return basketballFieldService.getBasketballfieldById(id, context);
     }
 }
 }

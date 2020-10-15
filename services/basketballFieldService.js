@@ -3,20 +3,28 @@ const Url = 'https://basketball-fields.herokuapp.com/api/basketball-fields';
 
 const basketballfieldService = {
 
-    getAllBasketballfields: status => new Promise((resolve, reject) => {
-        const query = status ? '?status=${status}' : '';
+    getAllBasketballfields: (status, context) => new Promise((resolve, reject) => {
+        const query = status ? `?status=${status}` : '';
+
         request.get(`${Url}${query}`, (err, response, body) => {
             if (err) {reject();}
-            resolve(JSON.parse(body));
+            const myDB = context.db
+            body = JSON.parse(body)
+            for (i = 0; i < body.length; i++){
+                body[i]["pickupGames"] = myDB.BasketballField.find({stringId: body[i]["id"]})
+            }
+            resolve(body);
         });
     }),
 
-    getBasketballfieldById: id => new Promise((resolve, reject) => {
-        return request.get('${Url}/${id}', (err, response, body) => {
-          //kannski svona wierd komma hjá url og id
-          console.log(body);
+    getBasketballfieldById: (id,context) => new Promise((resolve, reject) => {
+        console.log(`${Url}/${id}`)
+        return request.get(`${Url}/${id}`, (err, response, body) => {
           if (err) {reject(); }
-          resolve(JSON.parse(body));
+          const myDB = context.db
+          body = JSON.parse(body)
+          body["pickupGames"] = myDB.BasketballField.find({stringId: body["id"]})
+          resolve((body));
         });
     })
 };
