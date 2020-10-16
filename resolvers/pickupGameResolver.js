@@ -24,30 +24,49 @@ module.exports = {
             if (new Date(end).getTime() - new Date(start).getTime() > 300000*24) {throw new Error('This game is too long')} 
             if (new Date(end).getTime() - new Date(start).getTime() < 300000){throw new Error('This game is too short')}
 
+            
+
             //check if field is closed
             if (field.status === 'CLOSED') {
                 throw new BasketballFieldClosedError();
             }
             console.log(basketballfieldId)
-            value = myDB.PickupGame.create({
+            value = await myDB.PickupGame.create({
                 start, end, location: basketballfieldId,
-                registeredPlayers: [hostId],
-                host: hostId
+                host: hostId,
+                registeredPlayers: [hostId]
             });
+
+            
 
             const basketballfield = await myDB.BasketballField.findOne({stringID: basketballfieldId});
             if (basketballfield == null) {
                 myDB.BasketballField.create({
+                    _id:basketballfieldId,
                     stringID: basketballfieldId,
                     pickupGames: [value._id]
                 })
-                return value;
             }
             else {
             basketballfield.pickupGames.push(value._id)
-            }
             basketballfield.save()
-            return value;
+            }
+
+            console.log(value)
+
+            return_value = value
+            return_value["id"] = return_value["_id"]
+            delete return_value["_id"]
+            return_value["location"] = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
+            return_value["host"] = await myDB.Player.findById(hostId)
+            console.log(return_value["host"])
+            return_value["registeredPlayers"] = JSON.parse(return_value["host"])
+
+            
+            console.log(return_value)
+            hostobject.playedGames = value._id
+            hostobject.save()
+            return return_value;
         },
 
         removePickupGame: async (parent, args, context) => {
