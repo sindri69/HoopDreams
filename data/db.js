@@ -11,5 +11,5 @@ const connection = mongoose.createConnection('mongodb+srv://hehehehehe:ch4c8ptqy
 module.exports = {
     Player: connection.model('Players', playerSchema),
     PickupGame: connection.model('PickupGames', pickupGameSchema),
-    BasketballField: connection.model('BasketballFields', basketballField)
+    BasketballField: connection.model('BasketballField', basketballField)
 };

@@ -5,16 +5,19 @@ module.exports = {
         allPickupGames: async(parent, args, context) => {
             const myDB = context.db
             const pickupgames = await myDB.PickupGame.find({available: true})
+            console.log(pickupgames)
             return pickupgames
     }},
     mutations: {
         createPickupGame: async (parent, args, context) => {
+            //get everything we need
             const { start, end, basketballfieldId, hostId} = args.input;
             const { basketballFieldService } = context.services;
             const myDB = context.db
             
+            //find the basketballfield and host
             const field = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
-            const hostobject = await myDB.Player.find({_id: hostId, available: true})
+            const hostobject = await myDB.Player.findOne({_id: hostId, available: true})
             if (field == undefined) { throw new Error('Basketballfield does not exist'); }
             if (hostobject == null) {throw new NotFoundError('The host is not a valid player')}
 
@@ -25,17 +28,24 @@ module.exports = {
             if (field.status === 'CLOSED') {
                 throw new BasketballFieldClosedError();
             }
-
+            console.log(basketballfieldId)
             value = myDB.PickupGame.create({
                 start, end, location: basketballfieldId,
                 registeredPlayers: [hostId],
                 host: hostId
             });
-            console.log(basketballfieldId)
-            const basketballfield = await myDB.BasketballField.find({stringID: basketballfieldId});
-            console.log("basketballfield", basketballfield)
-            console.log("pickupgames:", basketballfield.stringID)
-            basketballfield.pickupGames.append(value._id)
+
+            const basketballfield = await myDB.BasketballField.findOne({stringID: basketballfieldId});
+            if (basketballfield == null) {
+                myDB.BasketballField.create({
+                    stringID: basketballfieldId,
+                    pickupGames: [value._id]
+                })
+                return value;
+            }
+            else {
+            basketballfield.pickupGames.push(value._id)
+            }
             basketballfield.save()
             return value;
         },

@@ -6,13 +6,18 @@ const basketballfieldService = {
     getAllBasketballfields: (status, context) => new Promise((resolve, reject) => {
         const query = status ? `?status=${status}` : '';
 
-        request.get(`${Url}${query}`, (err, response, body) => {
+        request.get(`${Url}${query}`, async (err, response, body) => {
             if (err) {reject();}
             const myDB = context.db
             body = JSON.parse(body)
+
             for (i = 0; i < body.length; i++){
-                body[i]["pickupGames"] = myDB.BasketballField.find({stringId: body[i]["id"]})
+               
+                body[i]["pickupGames"] = await myDB.BasketballField.findOne({stringId: body[i].id}).pickupGames
+                console.log("body:" ,body[i].id)
+                console.log("body:" ,body[i]["pickupGames"])
             }
+
             resolve(body);
         });
     }),
