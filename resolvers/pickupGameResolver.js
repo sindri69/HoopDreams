@@ -1,3 +1,4 @@
+const basketballField = require("../data/schema/basketballField");
 const { BasketballFieldClosedError, NotFoundError, PickupGameExceedMaximumError, PickupGameAlreadyPassedError } = require("../errors");
 
 module.exports = {
@@ -5,7 +6,6 @@ module.exports = {
         allPickupGames: async(parent, args, context) => {
             const myDB = context.db
             const pickupgames = await myDB.PickupGame.find({available: true})
-            console.log(pickupgames)
             return pickupgames
     }},
     mutations: {
