@@ -2,18 +2,24 @@ const { NotFoundError } = require("../errors")
 
 module.exports = {
     queries: {
-        allPlayers: async(context) => {
-            console.log(context)
+        allPlayers: async(parent, args, context) => {
             const myDB = context.db;
-            const players = await myDB.Players.find({available: true})
+            const players = await myDB.Player.find({available: true})
             return players
+<<<<<<< HEAD
         }, 
+=======
+        },
+>>>>>>> 2d4ff3909f08321702ee2d7da61dad67784dbc42
         player: async(parent, args, context) => {
-            console.log(context)
             const myDB = context.db;
             const {id} = args
-            const player = await myDB.Players.find({_id: id, available: true})
-            if (player == undefined) {throw new NotFoundError('This player is not valid')}
+            const player = await myDB.Player.find({_id: id, available: true}, function(err, result) {
+                if(err) {return null}
+                console.log(result)
+                return result
+            });
+            if (player == null) {throw new NotFoundError('This player was not available or something')}
             return player
         }},
     mutations: {
@@ -30,7 +36,7 @@ module.exports = {
         removePlayer: async (parent, args, context) => {
             const { id } = args;
             const myDB  = context.db;
-            const result = await myDB.Players.findById({_id: id});
+            const result = await myDB.Player.findById({_id: id});
             if(result == null) {throw new NotFoundError('This player does not exist');}
             result.available = false
             result.save()
