@@ -15,7 +15,6 @@ module.exports = {
             
             const field = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
             const hostobject = await myDB.Player.find({_id: hostId, available: true})
-
             if (field == undefined) { throw new Error('Basketballfield does not exist'); }
             if (hostobject == null) {throw new NotFoundError('The host is not a valid player')}
 
@@ -28,16 +27,15 @@ module.exports = {
             }
 
             value = myDB.PickupGame.create({
-                start, end, hostId,
-                location: basketballfieldId,
-                registeredPlayers: [hostId]
+                start, end, location: basketballfieldId,
+                registeredPlayers: [hostId],
+                host: hostId
             });
-            console.log(myDB)
-
-            basketballfield = myDB.BasketballField.findOne({stringID: basketballfieldId});
+            console.log(basketballfieldId)
+            const basketballfield = await myDB.BasketballField.find({stringID: basketballfieldId});
             console.log("basketballfield", basketballfield)
-            console.log("pickupgames:", basketballfield.PickupGame)
-            basketballfield.PickupGame.append(value["id"])
+            console.log("pickupgames:", basketballfield.stringID)
+            basketballfield.pickupGames.append(value._id)
             basketballfield.save()
             return value;
         },

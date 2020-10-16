@@ -18,7 +18,6 @@ const basketballfieldService = {
     }),
 
     getBasketballfieldById: (id,context) => new Promise((resolve, reject) => {
-        console.log(`${Url}/${id}`)
         return request.get(`${Url}/${id}`, (err, response, body) => {
           if (err) {reject(); }
           const myDB = context.db
