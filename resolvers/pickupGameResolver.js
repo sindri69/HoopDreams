@@ -52,15 +52,17 @@ module.exports = {
             basketballfield.save()
             }
 
-            console.log(value)
-
             return_value = value
             return_value["id"] = return_value["_id"]
             delete return_value["_id"]
-            return_value["location"] = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
-            return_value["host"] = await myDB.Player.findById(hostId)
+            const location = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
+            const location_games = basketballfield.pickupGames
+            return_value["location"] = {"id": location._id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "pickupGames": location_games, "status": location.status}
+            const host = await myDB.Player.findById(hostId)
+            console.log(host)
+            return_value["host"] = {"id": host._id, "name": host.name, "playedGames": host.playedGames}
             console.log(return_value["host"])
-            return_value["registeredPlayers"] = JSON.parse(return_value["host"])
+            return_value["registeredPlayers"] = return_value["host"]
 
             
             console.log(return_value)
