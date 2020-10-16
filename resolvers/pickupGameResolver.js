@@ -9,16 +9,18 @@ module.exports = {
     }},
     mutations: {
         createPickupGame: async (parent, args, context) => {
-            const { start, end, basketballFieldId, host} = args.input;
-            const { myDB, basketballService } = context;
-            const field = await basketballService.getBasketballfieldById(basketballFieldId);
-            const hostobject = await myDB.players.find({_id: host, available: true})
+            const { start, end, basketballfieldId, hostId} = args.input;
+            const { basketballFieldService } = context.services;
+            const myDB = context.db
+            
+            const field = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
+            const hostobject = await myDB.Player.find({_id: hostId, available: true})
 
             if (field == undefined) { throw new Error('Basketballfield does not exist'); }
             if (hostobject == null) {throw new NotFoundError('The host is not a valid player')}
 
-            if (Date(end).getTime() - Date(start).getTime() > 300000*24) {throw new Error('This game is too long')} 
-            if (Date(end).getTime() - Date(start).getTime() < 300000){throw new Error('This game is too short')}
+            if (new Date(end).getTime() - new Date(start).getTime() > 300000*24) {throw new Error('This game is too long')} 
+            if (new Date(end).getTime() - new Date(start).getTime() < 300000){throw new Error('This game is too short')}
 
             //check if field is closed
             if (field.status === 'CLOSED') {
@@ -26,13 +28,18 @@ module.exports = {
             }
 
             value = myDB.PickupGame.create({
-                start, end, host,
-                location: basketballFieldId,
-                registeredPlayers: [host]
+                start, end, hostId,
+                location: basketballfieldId,
+                registeredPlayers: [hostId]
             });
+            console.log(myDB)
 
-            basketballfield = myDB.BasketballField.findById(basketballFieldId);
-            basketballfield["pickupGames"].append(value["id"])
+            basketballfield = myDB.BasketballField.findOne({stringID: basketballfieldId});
+            console.log("basketballfield", basketballfield)
+            console.log("pickupgames:", basketballfield.PickupGame)
+            basketballfield.PickupGame.append(value["id"])
+            basketballfield.save()
+            return value;
         },
 
         removePickupGame: async (parent, args, context) => {

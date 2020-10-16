@@ -6,6 +6,7 @@ module.exports = {
         allPlayers: async(parent, args, context) => {
             const myDB = context.db;
             const players = await myDB.Player.find({available: true})
+            console.log(Date.now())
             return players
         }, 
         player: async(parent, args, context) => {
