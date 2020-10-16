@@ -7,7 +7,7 @@ module.exports = {
             const myDB = context.db;
             const players = await myDB.Players.find({available: true})
             return players
-        }, //Ekki rétt. Geri þetta betur þegar við vitum hvernig db lítur út
+        }, 
         player: async(parent, args, context) => {
             console.log(context)
             const myDB = context.db;
