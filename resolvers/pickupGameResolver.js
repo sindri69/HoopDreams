@@ -1,13 +1,24 @@
 const basketballField = require("../data/schema/basketballField");
-const { BasketballFieldClosedError, NotFoundError, PickupGameExceedMaximumError, PickupGameAlreadyPassedError } = require("../errors");
+const { BasketballFieldClosedError, NotFoundError, PickupGameExceedMaximumError, PickupGameAlreadyPassedError, PickupGameOverlapError } = require("../errors");
 
 module.exports = {
     queries: {
         allPickupGames: async(parent, args, context) => {
             const myDB = context.db
             const pickupgames = await myDB.PickupGame.find({available: true})
-            return pickupgames
-    }},
+            return pickupgames},
+        pickupGame: async(parent, args, context) => {
+            const myDB = context.db
+            const game = await myDB.PickupGame.findById(args.id)
+
+            const location = await 
+
+            returned = {"id": game._id, "start": game.start, "end": game.end, "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": [{"id": host._id, "name": host.name}]}
+
+
+
+        }
+    },
     mutations: {
         createPickupGame: async (parent, args, context) => {
             //get everything we need
@@ -21,23 +32,34 @@ module.exports = {
             if (field == undefined) { throw new Error('Basketballfield does not exist'); }
             if (hostobject == null) {throw new NotFoundError('The host is not a valid player')}
 
-            if (new Date(end).getTime() - new Date(start).getTime() > 300000*24) {throw new Error('This game is too long')} 
-            if (new Date(end).getTime() - new Date(start).getTime() < 300000){throw new Error('This game is too short')}
 
+            //Check if the dates are valid
+            date_end = new Date(end)
+            date_start = new Date(start)
+
+            if (date_end < Date.now() || date_start < Date.now()){throw new Error('This date has passed')}
+            if (date_end < date_start){throw new Error('The end cannot happen before the beginning unless you`re a time traveler')}
+            if (date_end.getTime() - date_start.getTime() > 300000*24) {throw new Error('This game is too long')} 
             
-
+            if (date_end.getTime() - date_start.getTime() < 300000){throw new Error('This game is too short')}
             //check if field is closed
             if (field.status === 'CLOSED') {
                 throw new BasketballFieldClosedError();
             }
-            console.log(basketballfieldId)
+            
+            all_games = await myDB.PickupGame.find({location: basketballfieldId})
+            for (i = 0; i < all_games.length; i++){
+                if (date_start <= all_games[i].start && all_games[i].start <= date_end) throw new PickupGameOverlapError(); // b starts in a
+                if (date_start <= all_games[i].end   && all_games[i].end   <= date_end) throw new PickupGameOverlapError(); // b ends in a
+                if (all_games[i].start <  date_start && date_end   <  all_games[i].end) throw new PickupGameOverlapError(); // a in b
+            }
+
+            
             value = await myDB.PickupGame.create({
                 start, end, location: basketballfieldId,
                 host: hostId,
                 registeredPlayers: [hostId]
             });
-
-            
 
             const basketballfield = await myDB.BasketballField.findOne({stringID: basketballfieldId});
             if (basketballfield == null) {
@@ -52,24 +74,24 @@ module.exports = {
             basketballfield.save()
             }
 
-            return_value = value
-            return_value["id"] = return_value["_id"]
-            delete return_value["_id"]
+            let return_value = value
+            return_value["id"]=return_value["_id"]
+            delete return_value._id
+
             const location = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
             const location_games = basketballfield.pickupGames
             return_value["location"] = {"id": location._id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "pickupGames": location_games, "status": location.status}
             const host = await myDB.Player.findById(hostId)
-            console.log(host)
+
             return_value["host"] = {"id": host._id, "name": host.name, "playedGames": host.playedGames}
-            console.log(return_value["host"])
             return_value["registeredPlayers"] = return_value["host"]
 
-            
-            console.log(return_value)
+            returned = {"id": return_value._id, "start": return_value["start"], "end": return_value["end"], "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": [{"id": host._id, "name": host.name}]}
+
             hostobject.playedGames = value._id
             hostobject.save()
-            return return_value;
-        },
+            return returned
+            },
 
         removePickupGame: async (parent, args, context) => {
             const { id } = args;

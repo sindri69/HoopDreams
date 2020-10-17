@@ -9,6 +9,6 @@ module.exports = {
             const { basketballFieldService } = context.services;
             const { id } = args;
             return basketballFieldService.getBasketballfieldById(id, context);
-    }
-}
+    },
+},
 }
