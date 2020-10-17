@@ -144,9 +144,10 @@ module.exports = {
                 if (pickupgame.registeredPlayers[i] == Player._id){throw new PlayerConflictError('This player is already in this game')}
             }
             console.log("overlap",overlappingGames)
+            console.log("player", Player)
             for (i = 0; i < overlappingGames.length; i++){
                 for (j = 0; j < overlappingGames[i].registeredPlayers.length; j++){
-                    if (overlappingGames[i].registeredPlayers[j] == Player){
+                    if (overlappingGames[i].registeredPlayers[j] == Player._id){
                         throw new PlayerConflictError('This player is busy at that time')
                     }
                 }
