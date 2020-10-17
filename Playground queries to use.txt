@@ -1,0 +1,107 @@
+# Write your query or mutation here
+query allPickupGames {
+  allPickupGames {
+    id
+    start
+    end 
+    location{
+    id
+    name
+    capacity
+    yearOfCreation
+    status}
+    registeredPlayers{id name}
+    host {id name }
+
+  }
+}
+
+query PickupGame {
+  pickupGame(id: "5f8b081e3236b243680d06ba"){
+    id
+    start
+    end 
+    location{
+    id
+    name
+    capacity
+    yearOfCreation
+    status}
+    registeredPlayers{id name}
+    host {id name }
+  }
+}
+
+query allBasketballFields {
+  allBasketballFields(status:OPEN) {
+    id
+    name
+    capacity
+    yearOfCreation
+    status
+    pickupGames{id start end}
+  }
+}
+
+query basketballField {
+  basketballField(id:"ef42039e-77bc-40a3-8121-c2a5424ebcdb") {
+    id
+    name
+    capacity
+    yearOfCreation
+    status
+    pickupGames{id }
+  }
+}
+
+query allPlayers {
+  allPlayers{id name playedGames{id}}
+}
+
+mutation createPlayer {
+  createPlayer(input: {name: "Jane"})
+{id
+name
+}
+}
+
+query playerById{
+  player(id: "5f8988fde89ebb39a87cca7f")
+  {name
+    id
+    playedGames{id}
+}
+}
+
+mutation removePlayer {
+  removePlayer(id: "5f897f68c8d995230411e6fd" )
+}
+
+mutation updatePlayer {
+  updatePlayer(id: "5f88cc060427e428d0059750" name: "Jane")
+  {id
+  name 
+  playedGames{id}
+  }
+}
+
+mutation createPickupGame {
+  createPickupGame(input: {start: "2022-04-14T10:20:30Z" end:"2022-04-14T12:20:30Z" basketballfieldId: "ef42039e-77bc-40a3-8121-c2a5424ebcdb" hostId: "5f8988fde89ebb39a87cca7f"})
+  {
+    id
+    start
+    end
+    location{id name yearOfCreation capacity}
+    host{id name}
+  }
+}
+
+mutation registerPlayer {
+  addPlayerToPickupGame(id: "5f8b081e3236b243680d06ba" playerId: "5f8988fde89ebb39a87cca7f") 
+  {
+  	id
+    start
+    end 
+    location{id}
+  }
+}
