@@ -40,11 +40,60 @@ class NotFoundError extends ApolloError {
     }
 }
 
+class PickupGameLengthError extends ApolloError {
+    constructor(message = 'The game is too long or too short.'){
+        super(message, null, null);
+        this.name = "PickupGameLengthError";
+        this.code = 400;
+    }
+}
+
+
+class PickupGameDateError extends ApolloError {
+    constructor(message = 'There is something wrong with the start and end dates'){
+        super(message, null, null);
+        this.name = "PickupGameDateError";
+        this.code = 400;
+    }
+}
+
+
+class DeletePickupGameError extends ApolloError {
+    constructor(message = 'The game could not be deleted'){
+        super(message, null, null);
+        this.name = "PickupGameDeleteError";
+        this.code = 400;
+    }
+}
+
+
+class PlayerConflictError extends ApolloError {
+    constructor(message = 'The player is busy'){
+        super(message, null, null);
+        this.name = "PlayerConflictError";
+        this.code = 409;
+    }
+}
+
+class RemovePlayerFromGameError extends ApolloError {
+    constructor(message = 'The player could not be removed from the game'){
+        super(message, null, null);
+        this.name = "RemovePlayerFromGameError";
+        this.code = 400;
+    }
+}
+
 module.exports = {
     PickupGameExceedMaximumError,
     BasketballFieldClosedError,
     PickupGameOverlapError,
     PickupGameAlreadyPassedError,
     NotFoundError,
-    UserInputError
+    UserInputError,
+    PickupGameLengthError,
+    PickupGameDateError,
+    DeletePickupGameError,
+    PlayerConflictError,
+    RemovePlayerFromGameError
+
 };
