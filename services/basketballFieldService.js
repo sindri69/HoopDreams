@@ -8,37 +8,15 @@ const basketballfieldService = {
 
         request.get(`${Url}${query}`, async (err, response, body) => {
             if (err) {reject();}
-            const myDB = context.db
-            console.log("DB", myDB)
-            body = JSON.parse(body)
-            for (i = 0; i < body.length; i++){
-                console.log("ID: ", body[i].id)
-                field = await myDB.BasketballField.findOne({stringID: body[i].id})
-                console.log(field)
-                body[i]["pickupGames"] = field
-                console.log(body[i]["pickupGames"])
-                if (body[i]["pickupGames"] == undefined){body[i]['pickupGames'] = []}
-                else {body[i]['pickupGames'] = field.pickupGames;
-                for (j = 0; j < body[i]["pickupGames"].length; j++){
-                    body[i]['pickupGames'][j] = await myDB.PickupGame.findOne({_id: body[i]['pickupGames'][j]})
-               }}
-                
-                console.log("body:" ,body[i].id)
-                console.log("body:" ,body[i])
-            }
-            console.log("FINAL ", body)
-            resolve(body);
+            resolve(JSON.parse(body));
         });
     }),
 
     getBasketballfieldById: (id,context) => new Promise((resolve, reject) => {
         return request.get(`${Url}/${id}`, (err, response, body) => {
-          if (err) {reject(); }
-          const myDB = context.db
-          body = JSON.parse(body)
-          body["pickupGames"] = myDB.BasketballField.find({stringId: body["id"]}).pickupGames
-          if (body["pickupGames"] == undefined){body['pickupGames'] = []}
-          resolve((body));
+          if (err) {reject() }
+          resolve(body);
+        
         });
     })
 };
