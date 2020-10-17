@@ -4,19 +4,39 @@ const { BasketballFieldClosedError, NotFoundError, PickupGameExceedMaximumError,
 module.exports = {
     queries: {
         allPickupGames: async(parent, args, context) => {
+            const {basketballFieldService} = context.services
             const myDB = context.db
             const pickupgames = await myDB.PickupGame.find({available: true})
-            return pickupgames},
+            all_games = []
+            for (c = 0; c < pickupgames.length; c++){
+                game = pickupgames[c]
+                var location = await basketballFieldService.getBasketballfieldById(game.location, context)
+                var host = await myDB.Player.findById(game.host)
+                registered_players = []
+                for (i = 0; i < game.registeredPlayers.length; i++){
+                player = await myDB.Player.findById(game.registeredPlayers[i])
+                registered_players.push(player)
+                }
+                returned = {"id": game._id, "start": game.start, "end": game.end, "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": registered_players}
+                all_games.push(returned)
+            }
+            return all_games
+        },
         pickupGame: async(parent, args, context) => {
+            const {basketballFieldService} = context.services
             const myDB = context.db
             const game = await myDB.PickupGame.findById(args.id)
 
-            const location = await 
+            const location = await basketballFieldService.getBasketballfieldById(game.location, context);
+            const host = await myDB.Player.findById(game.host)
 
-            returned = {"id": game._id, "start": game.start, "end": game.end, "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": [{"id": host._id, "name": host.name}]}
-
-
-
+            registered_players = []
+            for (c = 0; c < game.registeredPlayers.length; c++){
+                player = await myDB.Player.findById(game.registeredPlayers[c])
+                registered_players.push(player)
+            }
+            returned = {"id": game._id, "start": game.start, "end": game.end, "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": registered_players}
+            return returned
         }
     },
     mutations: {
@@ -73,18 +93,9 @@ module.exports = {
             basketballfield.pickupGames.push(value._id)
             basketballfield.save()
             }
-
             let return_value = value
-            return_value["id"]=return_value["_id"]
-            delete return_value._id
-
             const location = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
-            const location_games = basketballfield.pickupGames
-            return_value["location"] = {"id": location._id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "pickupGames": location_games, "status": location.status}
             const host = await myDB.Player.findById(hostId)
-
-            return_value["host"] = {"id": host._id, "name": host.name, "playedGames": host.playedGames}
-            return_value["registeredPlayers"] = return_value["host"]
 
             returned = {"id": return_value._id, "start": return_value["start"], "end": return_value["end"], "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": [{"id": host._id, "name": host.name}]}
 
@@ -111,35 +122,39 @@ module.exports = {
         },
 
         addPlayerToPickupGame: async (parent, args, context) => {
-            const {myDB, basketballService} = context;
-            const { player, pickupgame} = args.input;
-            const Pickupgame = await myDB.PickupGame.find({_id: pickupgame, available: true});
-            const capacity = await basketballService.getBasketballfieldById(pickupgame.location).capacity;
-            const overlapingGames = await myDB.PickupGame.find({start: {$gte: pickupgame.start}, end: {$lte: pickupgame.end}, location: pickupgame.location})
+            const {basketballFieldService} = context.services;
+            const myDB = context.db
+            const { id, playerId} = args;
+            const pickupgame = await myDB.PickupGame.findOne({_id: id, available: true});
+            const capacity = await basketballFieldService.getBasketballfieldById(pickupgame.location, context).capacity;
+            const overlappingGames = await myDB.PickupGame.find({start: {$gte: pickupgame.start}, end: {$lte: pickupgame.end}, location: pickupgame.location})
             if(pickupgame == undefined) {throw new NotFoundError();}
             
             //check if playerid exists
-            const Player = await myDB.Player.find({_id: player, available: true});
+            const Player = await myDB.Player.findOne({_id: playerId, available: true});
             if(Player == undefined) {throw new NotFoundError('skrifa message fyrir yðar hátign');}
 
-            if (Pickupgame.registeredPlayers.length == capacity){throw new PickupGameExceedMaximumError()}
 
-            for (i = 0; i < Pickupgame.registeredPlayers.length; i++){
-                if (Pickupgame.registeredPlayers[i] == player){throw new Error('This player is already in this game')}
+            if (pickupgame.registeredPlayers.length == capacity){throw new PickupGameExceedMaximumError()}
+
+            for (i = 0; i < pickupgame.registeredPlayers.length; i++){
+                if (pickupgame.registeredPlayers[i] == Player){throw new Error('This player is already in this game')}
             }
 
-            for (i = 0; i < overlapingGames.length; i++){
+            for (i = 0; i < overlappingGames.length; i++){
                 for (j = 0; j < overlappingGames[i].registeredPlayers.length; j++){
-                    if (overlapingGames[i].registeredPlayers[j] == player){
+                    if (overlappingGames[i].registeredPlayers[j] == Player){
                         throw new Error('This player is busy at that time')
                     }
                 }
             } 
-            player.playedGames.push(pickupgame.id)
-            player.save()
-            Pickupgame.registeredPlayers.push(player)
-            Pickupgame.save()
-            return Pickupgame
+            Player.playedGames.push(pickupgame.id)
+            Player.save()
+            console.log(pickupgame.registeredPlayers)
+            pickupgame.registeredPlayers.push(Player)
+            pickupgame.save()
+            returned = {"id": return_value._id, "start": return_value["start"], "end": return_value["end"], "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": [{"id": host._id, "name": host.name}]}
+            return pickupgame
         },
         removePlayerFromPickupGame: async (parent, args, context) => {
             const {myDB} = context;
