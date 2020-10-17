@@ -1,12 +1,16 @@
 const basketballField = require("../data/schema/basketballField");
-const { BasketballFieldClosedError, NotFoundError, PickupGameExceedMaximumError, PickupGameAlreadyPassedError, PickupGameOverlapError, PlayerConflictError } = require("../errors");
+const { BasketballFieldClosedError, NotFoundError, PickupGameExceedMaximumError, PickupGameAlreadyPassedError, PickupGameOverlapError, PlayerConflictError, DeletePickupGameError } = require("../errors");
+const playerResolver = require("./playerResolver");
 
 module.exports = {
     queries: {
         allPickupGames: async(parent, args, context) => {
+            //get everything we need
             const {basketballFieldService} = context.services
             const myDB = context.db
             const pickupgames = await myDB.PickupGame.find({available: true})
+
+            //change the data so it can be returned in the correct format
             all_games = []
             for (c = 0; c < pickupgames.length; c++){
                 game = pickupgames[c]
@@ -23,13 +27,14 @@ module.exports = {
             return all_games
         },
         pickupGame: async(parent, args, context) => {
+            //get everything we need
             const {basketballFieldService} = context.services
             const myDB = context.db
             const game = await myDB.PickupGame.findById(args.id)
-
             const location = await basketballFieldService.getBasketballfieldById(game.location, context);
             const host = await myDB.Player.findById(game.host)
 
+            //change the data so it can be returned in the correct format
             registered_players = []
             for (c = 0; c < game.registeredPlayers.length; c++){
                 player = await myDB.Player.findById(game.registeredPlayers[c])
@@ -62,11 +67,13 @@ module.exports = {
             if (date_end.getTime() - date_start.getTime() > 300000*24) {throw new Error('This game is too long')} 
             
             if (date_end.getTime() - date_start.getTime() < 300000){throw new Error('This game is too short')}
+            
             //check if field is closed
             if (field.status === 'CLOSED') {
                 throw new BasketballFieldClosedError();
             }
             
+            //check again if dates are valid
             all_games = await myDB.PickupGame.find({location: basketballfieldId})
             for (i = 0; i < all_games.length; i++){
                 if (date_start <= all_games[i].start && all_games[i].start <= date_end) throw new PickupGameOverlapError(); // b starts in a
@@ -74,7 +81,7 @@ module.exports = {
                 if (all_games[i].start <  date_start && date_end   <  all_games[i].end) throw new PickupGameOverlapError(); // a in b
             }
 
-            
+            //change the data so it can be returned in the correct format
             value = await myDB.PickupGame.create({
                 start, end, location: basketballfieldId,
                 host: hostId,
@@ -93,6 +100,7 @@ module.exports = {
             basketballfield.pickupGames.push(value._id)
             basketballfield.save()
             }
+
             let return_value = value
             const location = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
             const host = await myDB.Player.findById(hostId)
@@ -105,10 +113,12 @@ module.exports = {
             },
 
         removePickupGame: async (parent, args, context) => {
+            //get everything we need
             const { id } = args;
             const { myDB } = context;
             const result = await myDB.PickupGame.findById({_id: id});
-            if(result == null) {throw new Error('Could not delete pickup game');}
+            
+            if(result == null) {throw new DeletePickupGameError('Could not delete pickup game');}
             result.available = false
             result.save()
             basketballfield = myDB.BasketballField.findById(basketballFieldId);
@@ -122,6 +132,7 @@ module.exports = {
         },
 
         addPlayerToPickupGame: async (parent, args, context) => {
+            //get everything we need
             const {basketballFieldService} = context.services;
             const myDB = context.db
             const { id, playerId} = args;
@@ -137,14 +148,15 @@ module.exports = {
             const Player = await myDB.Player.findOne({_id: playerId, available: true});
             if(Player == undefined) {throw new NotFoundError('Player was not found');}
 
-
+            //check if pickupgame is full
             if (pickupgame.registeredPlayers.length == capacity){throw new PickupGameExceedMaximumError()}
 
+            //check if player is already in the game
             for (i = 0; i < pickupgame.registeredPlayers.length; i++){
                 if (pickupgame.registeredPlayers[i] == Player._id){throw new PlayerConflictError('This player is already in this game')}
             }
-            console.log("overlap",overlappingGames)
-            console.log("player", Player)
+
+            //check if player is in another game at the same time
             for (i = 0; i < overlappingGames.length; i++){
                 for (j = 0; j < overlappingGames[i].registeredPlayers.length; j++){
                     if (overlappingGames[i].registeredPlayers[j] == Player._id){
@@ -165,39 +177,51 @@ module.exports = {
                 player = await myDB.Player.findById(pickupgame.registeredPlayers[c])
                 registered_players.push(player)
             }
-            console.log("locationid:", location.id)
 
             returned = {"id": pickupgame._id, "start": pickupgame.start, "end": pickupgame.end, "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": [{"id": host._id, "name": host.name}]}
             return returned
         },
         removePlayerFromPickupGame: async (parent, args, context) => {
-            const {myDB} = context;
-            const { player, pickupgame} = args.input;
-            const Pickupgame = await myDB.PickupGame.findById(pickupgame);
-            if(Pickupgame == undefined) {throw new NotFoundError();}
+            //get everything we need
+            const myDB = context.db;
+            const { id, playerId} = args;
+            const Pickupgame = await myDB.PickupGame.findById(id);
+            if(Pickupgame == undefined) {throw new NotFoundError('could not find pickup game with this id');}
             
             //check if playerid exists
-            const Player = await myDB.Player.findbyId(player);
-            if(Player == undefined) {throw new NotFoundError('skrifa message fyrir yðar hátign');}
+            const Player = await myDB.Player.findById(playerId);
+            if(Player == undefined) {throw new NotFoundError('cound not find player with this id');}
 
-            if (Pickupgame.end < Date.now()){throw new PickupGameAlreadyPassedError()}
+            //check if game is already over
+            if (Pickupgame.end < Date.now()){throw new PickupGameAlreadyPassedError('this pickup game is already over so a player cannot be removed')}
             
-            for (i = 0; i < player.playedGames.length; i++){
-                if (player.playedGames[i] == pickupgame.id){
-                    player.playedGames.splice(i)
+            for (i = 0; i < Player.playedGames.length; i++){
+                if (Player.playedGames[i] == Pickupgame.id){
+                    Player.playedGames.splice(i)
                 }
             }
-            player.save()
+            Player.save()
 
+
+
+            //make the return object
             for (i = 0; i < Pickupgame.registeredPlayers.length; i++){
-                if (Pickupgame.registeredPlayers[i] == player){
-                    Pickupgame.registeredPlayers.splice(i)
-                    if (player == Pickupgame.host){
-                        var sorted = Pickupgame.registeredPlayers.sort()
-                        Pickupgame.host = sorted[0]
-                        Pickupgame.save()
-                        return Pickupgame
+                if (Pickupgame.registeredPlayers[i] == playerId){
+                    Pickupgame.registeredPlayers.splice(i, 1)
+               
+                    //check if the player to be removed is the host,if so make the first player in the alphabet be the new host
+                    if (playerId == Pickupgame.host){           
+                        var tmp = []
+                        for(j = 0; j < Pickupgame.registeredPlayers.length; j++){
+                            tmpplayer = await myDB.Player.findById(Pickupgame.registeredPlayers[j]);
+                            tmp.push(tmpplayer.name) 
+                        }
+                        newhostname = tmp.sort()[0]
+                        const newhost = await myDB.Player.findOne({name: newhostname});
+                        Pickupgame.host = newhost._id
                     }
+                    Pickupgame.save()
+                    return true
                 }
             }
 
