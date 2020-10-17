@@ -1,6 +1,6 @@
-const basketballField = require("../data/schema/basketballField");
+
 const { BasketballFieldClosedError, NotFoundError, PickupGameExceedMaximumError, PickupGameAlreadyPassedError, PickupGameOverlapError, PlayerConflictError, DeletePickupGameError } = require("../errors");
-const playerResolver = require("./playerResolver");
+const ObjectId = require ("mongoose").Types.ObjectId
 
 module.exports = {
     queries: {
@@ -14,7 +14,7 @@ module.exports = {
             all_games = []
             for (c = 0; c < pickupgames.length; c++){
                 game = pickupgames[c]
-                var location = await basketballFieldService.getBasketballfieldById(game.location, context)
+                var location = JSON.parse(await basketballFieldService.getBasketballfieldById(game.location, context))
                 var host = await myDB.Player.findById(game.host)
                 registered_players = []
                 for (i = 0; i < game.registeredPlayers.length; i++){
@@ -31,7 +31,7 @@ module.exports = {
             const {basketballFieldService} = context.services
             const myDB = context.db
             const game = await myDB.PickupGame.findById(args.id)
-            const location = await basketballFieldService.getBasketballfieldById(game.location, context);
+            const location = JSON.parse(await basketballFieldService.getBasketballfieldById(game.location, context));
             const host = await myDB.Player.findById(game.host)
 
             //change the data so it can be returned in the correct format
@@ -136,12 +136,14 @@ module.exports = {
             const {basketballFieldService} = context.services;
             const myDB = context.db
             const { id, playerId} = args;
+            if (!ObjectId.isValid(id)) throw new NotFoundError('This game does not exist')
+            if (!ObjectId.isValid(playerId)) throw new NotFoundError('This player does not exist')
             const pickupgame = await myDB.PickupGame.findOne({_id: id, available: true});
-            const location = await basketballFieldService.getBasketballfieldById(pickupgame.location, context);
+            const location = JSON.parse(await basketballFieldService.getBasketballfieldById(pickupgame.location, context));
             const capacity = location.capacity
             const overlappingGames = await myDB.PickupGame.find({start: {$gte: pickupgame.start}, end: {$lte: pickupgame.end}})
             
-            if(pickupgame == undefined) {throw new NotFoundError();}
+            if(pickupgame == null) {throw new NotFoundError('This gameId is not valid');}
 
 
             //check if playerid exists
