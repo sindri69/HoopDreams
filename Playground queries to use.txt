@@ -17,7 +17,7 @@ query allPickupGames {
 }
 
 query PickupGame {
-  pickupGame(id: "5f8b081e3236b243680d06ba"){
+  pickupGame(id: "5f8b118473895b362046a48f"){
     id
     start
     end 
@@ -32,59 +32,6 @@ query PickupGame {
   }
 }
 
-query allBasketballFields {
-  allBasketballFields(status:OPEN) {
-    id
-    name
-    capacity
-    yearOfCreation
-    status
-    pickupGames{id start end}
-  }
-}
-
-query basketballField {
-  basketballField(id:"ef42039e-77bc-40a3-8121-c2a5424ebcdb") {
-    id
-    name
-    capacity
-    yearOfCreation
-    status
-    pickupGames{id }
-  }
-}
-
-query allPlayers {
-  allPlayers{id name playedGames{id}}
-}
-
-mutation createPlayer {
-  createPlayer(input: {name: "Jane"})
-{id
-name
-}
-}
-
-query playerById{
-  player(id: "5f8988fde89ebb39a87cca7f")
-  {name
-    id
-    playedGames{id}
-}
-}
-
-mutation removePlayer {
-  removePlayer(id: "5f897f68c8d995230411e6fd" )
-}
-
-mutation updatePlayer {
-  updatePlayer(id: "5f88cc060427e428d0059750" name: "Jane")
-  {id
-  name 
-  playedGames{id}
-  }
-}
-
 mutation createPickupGame {
   createPickupGame(input: {start: "2022-04-14T10:20:30Z" end:"2022-04-14T12:20:30Z" basketballfieldId: "ef42039e-77bc-40a3-8121-c2a5424ebcdb" hostId: "5f8988fde89ebb39a87cca7f"})
   {
@@ -96,12 +43,70 @@ mutation createPickupGame {
   }
 }
 
-mutation registerPlayer {
-  addPlayerToPickupGame(id: "5f8b081e3236b243680d06ba" playerId: "5f8988fde89ebb39a87cca7f") 
+query allBasketballFields {
+  allBasketballFields {
+    id
+    name
+    capacity
+    yearOfCreation
+    status
+    pickupGames{id start end location{id name capacity yearOfCreation status} registeredPlayers{id name}}
+  }
+}
+
+query basketballField {
+  basketballField(id:"ef42039e-77bc-40a3-8121-c2a5424ebcdb") {
+    id
+    name
+    capacity
+    yearOfCreation
+    status
+    pickupGames{id start end location{id name capacity yearOfCreation status} registeredPlayers{id name}}
+  }
+}
+
+query allPlayers {
+  allPlayers{id name playedGames{id start end location{id name capacity yearOfCreation status} host{id name}}}
+}
+query playerById{
+  player(id: "5f8988fde89ebb39a87cca7f")
+  {name
+    id
+    playedGames{id start end location{id name capacity yearOfCreation} host {id name}}
+}
+}
+
+mutation createPlayer {
+  createPlayer(input: {name: "Todd"})
+{id
+name
+playedGames{id start end}
+}
+}
+
+mutation removePlayer {
+  removePlayer(id: "5f8b62fa83ec0a0aac8f3e0b" )
+}
+
+mutation updatePlayer {
+  updatePlayer(id: "5f8b4ab77c61b832d04ccf4b" name: "Jandice")
+  {id
+  name 
+  playedGames{id start end location{id name yearOfCreation capacity status} host {id name}}
+  }
+}
+
+
+mutation addPlayerToGame {
+  addPlayerToPickupGame(id: "5f8b118473895b362046a48f" playerId: "5f8b4ac07c61b832d04ccf") 
   {
   	id
     start
     end 
     location{id}
   }
+}
+
+mutation removePlayerFromGame {
+  removePlayerFromPickupGame(id: "5f8b4e7292284f2c8451fb8d" playerId: "5f8b4ac07c61b832d04ccf4c")
 }
