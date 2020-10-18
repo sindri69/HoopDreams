@@ -17,7 +17,7 @@ query allPickupGames {
 }
 
 query PickupGame {
-  pickupGame(id: "5f8b118473895b362046a48f"){
+  pickupGame(id: "5f8b22526116307088d60682"){
     id
     start
     end 
@@ -33,7 +33,7 @@ query PickupGame {
 }
 
 mutation createPickupGame {
-  createPickupGame(input: {start: "2022-04-14T10:20:30Z" end:"2022-04-14T12:20:30Z" basketballfieldId: "ef42039e-77bc-40a3-8121-c2a5424ebcdb" hostId: "5f8988fde89ebb39a87cca7f"})
+  createPickupGame(input: {start: "2020-10-18T18:17:30Z" end:"2020-10-18T18:22:30Z" basketballfieldId: "ef42039e-77bc-40a3-8121-c2a5424ebcdb" hostId: "5f8988fde89ebb39a87cca7f"})
   {
     id
     start
@@ -43,6 +43,9 @@ mutation createPickupGame {
   }
 }
 
+mutation removePickupGame{
+  removePickupGame(id: "5f8c7917c987b57cff158b")}
+
 query allBasketballFields {
   allBasketballFields {
     id
@@ -50,7 +53,7 @@ query allBasketballFields {
     capacity
     yearOfCreation
     status
-    pickupGames{id start end location{id name capacity yearOfCreation status} registeredPlayers{id name}}
+    pickupGames{id start end location{id name capacity yearOfCreation status} registeredPlayers{id name} host {id name}}
   }
 }
 
@@ -61,7 +64,7 @@ query basketballField {
     capacity
     yearOfCreation
     status
-    pickupGames{id start end location{id name capacity yearOfCreation status} registeredPlayers{id name}}
+    pickupGames{id start end location{id name capacity yearOfCreation status} registeredPlayers{id name} host {id name}}
   }
 }
 
@@ -69,7 +72,7 @@ query allPlayers {
   allPlayers{id name playedGames{id start end location{id name capacity yearOfCreation status} host{id name}}}
 }
 query playerById{
-  player(id: "5f8988fde89ebb39a87cca7f")
+  player(id: "5f8b4adf7c61b832d04ccf4d")
   {name
     id
     playedGames{id start end location{id name capacity yearOfCreation} host {id name}}
@@ -98,15 +101,23 @@ mutation updatePlayer {
 
 
 mutation addPlayerToGame {
-  addPlayerToPickupGame(id: "5f8b118473895b362046a48f" playerId: "5f8b4ac07c61b832d04ccf") 
+  addPlayerToPickupGame(id: "5f8b22526116307088d60682" playerId: "5f8b62e083ec0a0aac8f3e0a") 
   {
   	id
     start
     end 
-    location{id}
+    location{
+    id
+    name
+    capacity
+    yearOfCreation
+    status}
+    registeredPlayers{id name}
+    host {id name }
+    
   }
 }
 
 mutation removePlayerFromGame {
-  removePlayerFromPickupGame(id: "5f8b4e7292284f2c8451fb8d" playerId: "5f8b4ac07c61b832d04ccf4c")
+  removePlayerFromPickupGame(id: "5f8b22526116307088d60682" playerId: "5f8988fde89ebb39a87cca7f")
 }

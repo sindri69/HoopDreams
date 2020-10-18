@@ -11,7 +11,6 @@ module.exports = {
             for (i = 0; i < players.length; i++){
                 all_games = []
                 for (c = 0; c < players[i].playedGames.length; c++){ //id, start, end, location (id, name, capacity, yearofcretion, status) registeredPlayers(id, name), host{id, name}
-
                     game = await myDB.PickupGame.findOne({_id: players[i].playedGames[c]})
                     location = JSON.parse(await basketballFieldService.getBasketballfieldById(game.location, context))
                     host = await myDB.Player.findOne({_id: game.host})

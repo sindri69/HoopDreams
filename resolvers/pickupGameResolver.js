@@ -32,7 +32,7 @@ module.exports = {
             const {basketballFieldService} = context.services
             const myDB = context.db
             if (!ObjectId.isValid(args.id)) throw new NotFoundError('This id is not valid')
-            const game = await myDB.PickupGame.findById(args.id)
+            const game = await myDB.PickupGame.findOne({_id: args.id, available: true})
             if(game == null) {throw new NotFoundError('A game with this id does not exist')}
             const location = JSON.parse(await basketballFieldService.getBasketballfieldById(game.location, context));
             const host = await myDB.Player.findById(game.host)
@@ -125,16 +125,31 @@ module.exports = {
             const { id } = args;
             const myDB = context.db;
             if (!ObjectId.isValid(id)) throw new NotFoundError('This id is not valid')
-            const result = await myDB.PickupGame.findById({_id: id});
-            
-            if(result == null) {throw new DeletePickupGameError('Could not delete pickup game');}
+            const result = await myDB.PickupGame.findOne({_id: id, available: true});
+ 
+            if(result == null) {throw new DeletePickupGameError('This pickup game does not exist');}
             result.available = false
             result.save()
             basketballfield = await myDB.BasketballField.findOne({_id: result.location});
+
+            //Remove this game from the locations pickupgames
             for (i = 0; i < basketballfield["pickupGames"].length; i++){
                 if (basketballfield["pickupGames"][i] == id){
                     basketballfield["pickupGames"].splice(i)
+                    basketballfield.save()
                     break
+                }
+            }
+
+            //Remove this game from the players played games
+            for (i = 0; i < result.registeredPlayers.length; i++){
+                player = await myDB.Player.findOne({_id: result.registeredPlayers[i]})
+                for (c = 0; c < player.playedGames.length; c++){
+                    if (player.playedGames[c] == id){
+                        player.playedGames.splice(c)
+                        player.save()
+                        break
+                    }
                 }
             }
             
@@ -149,16 +164,18 @@ module.exports = {
             if (!ObjectId.isValid(id)) throw new NotFoundError('This game does not exist')
             if (!ObjectId.isValid(playerId)) throw new NotFoundError('This player does not exist')
             const pickupgame = await myDB.PickupGame.findOne({_id: id, available: true});
+            if (pickupgame.end < Date.now()){throw new PickupGameAlreadyPassedError('this pickup game is already over so a player cannot be added to it')}
+            
+
+            if(pickupgame == null) {throw new NotFoundError('This game does not exist');}
+
             const location = JSON.parse(await basketballFieldService.getBasketballfieldById(pickupgame.location, context));
             const capacity = location.capacity
             const overlappingGames = await myDB.PickupGame.find({start: {$gte: pickupgame.start}, end: {$lte: pickupgame.end}})
             
-            if(pickupgame == null) {throw new NotFoundError('This gameId is not valid');}
-
-
             //check if playerid exists
             const Player = await myDB.Player.findOne({_id: playerId, available: true});
-            if(Player == undefined) {throw new NotFoundError('Player was not found');}
+            if(Player == null) {throw new NotFoundError('Player was not found');}
 
             //check if pickupgame is full
             if (pickupgame.registeredPlayers.length == capacity){throw new PickupGameExceedMaximumError()}
@@ -190,19 +207,21 @@ module.exports = {
                 registered_players.push(player)
             }
 
-            returned = {"id": pickupgame._id, "start": pickupgame.start, "end": pickupgame.end, "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": [{"id": host._id, "name": host.name}]}
+            returned = {"id": pickupgame._id, "start": pickupgame.start, "end": pickupgame.end, "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": registered_players}
             return returned
         },
         removePlayerFromPickupGame: async (parent, args, context) => {
             //get everything we need
             const myDB = context.db;
             const { id, playerId} = args;
-            const Pickupgame = await myDB.PickupGame.findById(id);
+            if (!ObjectId.isValid(id)) throw new NotFoundError('This game does not exist')
+            if (!ObjectId.isValid(playerId)) throw new NotFoundError('This player does not exist')
+            const Pickupgame = await myDB.PickupGame.findOne({_id: id, available: true});
             if(Pickupgame == undefined) {throw new NotFoundError('could not find pickup game with this id');}
             
             //check if playerid exists
-            const Player = await myDB.Player.findById(playerId);
-            if(Player == undefined) {throw new NotFoundError('cound not find player with this id');}
+            const Player = await myDB.Player.findOne({_id:playerId, available: true});
+            if(Player == undefined) {throw new NotFoundError('could not find player with this id');}
 
             //check if game is already over
             if (Pickupgame.end < Date.now()){throw new PickupGameAlreadyPassedError('this pickup game is already over so a player cannot be removed')}
@@ -213,8 +232,6 @@ module.exports = {
                 }
             }
             Player.save()
-
-
 
             //make the return object
             for (i = 0; i < Pickupgame.registeredPlayers.length; i++){
@@ -228,9 +245,14 @@ module.exports = {
                             tmpplayer = await myDB.Player.findById(Pickupgame.registeredPlayers[j]);
                             tmp.push(tmpplayer.name) 
                         }
+                        if (tmp.length == 0){
+                            Pickupgame.available = false
+                        }
+                        else {
                         newhostname = tmp.sort()[0]
                         const newhost = await myDB.Player.findOne({name: newhostname});
                         Pickupgame.host = newhost._id
+                        }
                     }
                     Pickupgame.save()
                     return true
