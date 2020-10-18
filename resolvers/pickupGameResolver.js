@@ -1,4 +1,5 @@
 
+const basketballField = require("../data/schema/basketballField");
 const { BasketballFieldClosedError, NotFoundError, PickupGameExceedMaximumError, PickupGameAlreadyPassedError, PickupGameOverlapError, PlayerConflictError, DeletePickupGameError } = require("../errors");
 const ObjectId = require ("mongoose").Types.ObjectId
 
@@ -30,7 +31,9 @@ module.exports = {
             //get everything we need
             const {basketballFieldService} = context.services
             const myDB = context.db
+            if (!ObjectId.isValid(args.id)) throw new NotFoundError('This id is not valid')
             const game = await myDB.PickupGame.findById(args.id)
+            if(game == null) {throw new NotFoundError('A game with this id does not exist')}
             const location = JSON.parse(await basketballFieldService.getBasketballfieldById(game.location, context));
             const host = await myDB.Player.findById(game.host)
 
@@ -52,7 +55,12 @@ module.exports = {
             const myDB = context.db
             
             //find the basketballfield and host
-            const field = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
+            
+            field = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
+            if (field == "Basketball field was not with this id."){throw new NotFoundError('This basketball field does not exist')}
+            field = JSON.parse(field)
+
+            if (!ObjectId.isValid(hostId)) throw new NotFoundError('This id is not valid')
             const hostobject = await myDB.Player.findOne({_id: hostId, available: true})
             if (field == undefined) { throw new Error('Basketballfield does not exist'); }
             if (hostobject == null) {throw new NotFoundError('The host is not a valid player')}
@@ -102,7 +110,7 @@ module.exports = {
             }
 
             let return_value = value
-            const location = await basketballFieldService.getBasketballfieldById(basketballfieldId, context);
+            const location = JSON.parse(await basketballFieldService.getBasketballfieldById(basketballfieldId, context));
             const host = await myDB.Player.findById(hostId)
 
             returned = {"id": return_value._id, "start": return_value["start"], "end": return_value["end"], "location": {"id": location.id, "name": location.name, "capacity": location.capacity, "yearOfCreation": location.yearOfCreation, "status": location.status}, "host": {"id": host._id, "name": host.name}, "registeredPlayers": [{"id": host._id, "name": host.name}]}
@@ -115,19 +123,21 @@ module.exports = {
         removePickupGame: async (parent, args, context) => {
             //get everything we need
             const { id } = args;
-            const { myDB } = context;
+            const myDB = context.db;
+            if (!ObjectId.isValid(id)) throw new NotFoundError('This id is not valid')
             const result = await myDB.PickupGame.findById({_id: id});
             
             if(result == null) {throw new DeletePickupGameError('Could not delete pickup game');}
             result.available = false
             result.save()
-            basketballfield = myDB.BasketballField.findById(basketballFieldId);
-            for (i = 0; i <basketballfield["pickupGames"].length; i++){
+            basketballfield = await myDB.BasketballField.findOne({_id: result.location});
+            for (i = 0; i < basketballfield["pickupGames"].length; i++){
                 if (basketballfield["pickupGames"][i] == id){
                     basketballfield["pickupGames"].splice(i)
                     break
                 }
             }
+            
             return true;
         },
 
